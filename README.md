@@ -45,4 +45,26 @@ This project uses:
 
 # Install on a connected device
 ./gradlew installDebug
-``` 
+```
+
+---
+
+## Criando telas (Layout Standard)
+
+Todas as telas **devem usar** o componente `ZeniteScreen` como base. Ele já inclui:
+
+* TopBar com botão de menu, título centralizado e avatar do usuário logado
+* BottomBar com botão flutuante
+* Drawer (mwenu) lateral e navegação automática
+
+---
+
+## Regras de desenvolvimento
+
+* Usar o padrão **MVVM**, para evitar lógica nas views. Toda regra e estado deve ficar no ViewModel
+* Criar as telas dentro do pacote `ui/screens/`
+* **Nao** usar texto fixo na interface (nada de hardcoded). Toda string deve estar no `strings.xml` e ser usada com `stringResource` para facilitar internacionalizacao
+* Adicionar novas entradas no `strings.xml` dentro de `res/values/`
+* Colocar recursos visuais apenas em `res/drawable` ou na pasta `assets/`
+
+---
