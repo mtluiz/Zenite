@@ -1,6 +1,51 @@
 <resources>
     <string name="app_name">Zênite</string>
+
+    <!-- welcome screen -->
     <string name="welcome_title">Seja bem vindo ao</string>
     <string name="welcome_subtitle">Explore o app e cuide de sua saúde mental</string>
     <string name="start_button">Início</string>
+
+    <!-- Login screen -->
+    <string name="welcome">Bem vindo</string>
+    <string name="login_title">Entre com sua conta</string>
+    <string name="code_label">Código Zênite</string>
+    <string name="password_label">Senha</string>
+    <string name="forgot_password">Esqueci minha senha</string>
+    <string name="login_button">Entrar</string>
+    <string name="no_account">Não tenho login,</string>
+    <string name="generate_access">gerar acesso</string>
+
+    <!-- generate access screen -->
+    <string name="generate_access_title">Gerar seu acesso</string>
+    <string name="full_name">Nome completo</string>
+    <string name="repeat_password_label">Repita a senha</string>
+    <string name="generate_code_button">Gerar acesso</string>
+    <string name="have_login">Já tenho login,</string>
+    <string name="access_account">acessar conta</string>
+
+    <!-- avatars screen -->
+    <string name="choose_avatar_title">Escolha seu avatar</string>
+    <string name="save_button">Salvar</string>
+
+    <!-- Feedbacks -->
+    <string name="password_very_weak">Muito fraca</string>
+    <string name="password_weak">Fraca</string>
+    <string name="password_good">Boa</string>
+    <string name="password_strong">Senha forte</string>
+    <string name="password_mismatch">As senhas não coincidem</string>
+
+    <!-- Drawer menu -->
+    <string name="menu_home">Início</string>
+    <string name="menu_checkin">Check-in</string>
+    <string name="menu_evolution">Evolução pessoal</string>
+    <string name="menu_support">Suporte</string>
+    <string name="menu_mood">Registre seu humor</string>
+    <string name="menu_diary">Questionário diário</string>
+    <string name="menu_account">Conta</string>
+    <string name="menu_settings">Configurações</string>
+    <string name="menu_logout">Sair</string>
+
+    <!-- Accessibility -->
+    <string name="edit_avatar">Editar avatar</string>
 </resources>
