@@ -10,6 +10,7 @@ import com.example.zenite.ui.screens.auth.AuthViewModel
 import com.example.zenite.ui.screens.auth.LoginScreen
 import com.example.zenite.ui.screens.avatars.AvatarViewModel
 import com.example.zenite.ui.screens.avatars.ChooseAvatarScreen
+import com.example.zenite.ui.screens.demo.ZeniteHomeScreen
 import com.example.zenite.ui.screens.generate_access.GenerateAccessScreen
 
 @Composable
@@ -55,7 +56,7 @@ fun ZeniteNavGraph(
         }
 
         composable("home") {
-
+            ZeniteHomeScreen()
         }
     }
 }

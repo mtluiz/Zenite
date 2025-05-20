@@ -65,13 +65,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HomePagePreview() {
     ZeniteTheme {
-//        ZeniteHomePage()
-//    WelcomeScreen {  }
-//        LoginScreen(
-//            onLoginClick = {},
-//            onForgotPassword = {},
-//            onGenerateAccess = {}
-//        )
-//        GenerateAccessScreen(onBack = {}, onAccessAccount = {}, onGenerateCode = {})
+        ZeniteHomePage()
     }
 }

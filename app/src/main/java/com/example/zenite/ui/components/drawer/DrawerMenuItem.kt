@@ -17,7 +17,8 @@ import com.example.zenite.R
 sealed class DrawerMenuItem(
     @StringRes val titleRes: Int,
     val icon: ImageVector,
-    val route: String
+    val route: String,
+    val fixedBottom: Boolean = false
 ) {
     object Home : DrawerMenuItem(R.string.menu_home, Icons.Default.Home, "home")
     object CheckIn : DrawerMenuItem(R.string.menu_checkin, Icons.Default.Check, "checkin")
@@ -26,18 +27,6 @@ sealed class DrawerMenuItem(
     object Mood : DrawerMenuItem(R.string.menu_mood, Icons.Default.Mood, "mood")
     object Diary : DrawerMenuItem(R.string.menu_diary, Icons.Default.DeveloperBoard, "diary")
     object Account : DrawerMenuItem(R.string.menu_account, Icons.Default.Person, "account")
-    object Settings : DrawerMenuItem(R.string.menu_settings, Icons.Default.Settings, "settings")
-    object Logout : DrawerMenuItem(R.string.menu_logout, Icons.Default.ExitToApp, "logout")
-
-    fun getDrawerMenuItems(): List<DrawerMenuItem> = listOf(
-        Home,
-        CheckIn,
-        Evolution,
-        Support,
-        Mood,
-        Diary,
-        Account,
-        Settings,
-        Logout
-    )
+    object Settings : DrawerMenuItem(R.string.menu_settings, Icons.Default.Settings, "settings", true)
+    object Logout : DrawerMenuItem(R.string.menu_logout, Icons.Default.ExitToApp, "logout", true)
 }
