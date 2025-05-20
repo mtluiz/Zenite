@@ -3,6 +3,7 @@ package com.example.zenite
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,24 +39,39 @@ import com.example.zenite.ui.theme.Primary
 import com.example.zenite.ui.theme.Secondary
 import com.example.zenite.ui.theme.Tertiary
 import com.example.zenite.ui.theme.ZeniteTheme
+import com.example.zenite.ui.welcome.WelcomeScreen
+import com.example.zenite.ui.welcome.WelcomeState
+import com.example.zenite.ui.welcome.WelcomeViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val viewModel: WelcomeViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             ZeniteTheme {
-                var showSplash by remember { mutableStateOf(true) }
+                var splashDone by remember { mutableStateOf(false) }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (showSplash) {
-                        SplashScreen {
-                            showSplash = false
+                    when {
+                        !splashDone -> SplashScreen {
+                            splashDone = true
                         }
-                    } else {
-                        ZeniteHomePage()
+
+                        else -> when (val state = viewModel.state.value) {
+                            WelcomeState.Loading -> {}
+
+                            WelcomeState.ShowWelcome -> WelcomeScreen {
+                                viewModel.onWelcomeDone()
+                            }
+
+                            WelcomeState.NavigateHome -> ZeniteHomePage()
+                        }
                     }
                 }
             }
@@ -189,6 +205,7 @@ fun ColorSwatch(color: Color, name: String) {
 @Composable
 fun HomePagePreview() {
     ZeniteTheme {
-        ZeniteHomePage()
+//        ZeniteHomePage()
+    WelcomeScreen {  }
     }
 }
