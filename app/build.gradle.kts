@@ -75,6 +75,7 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:0.15.1-alpha01")
     kapt("com.google.dagger:hilt-compiler:2.51.1")
 
     implementation("io.coil-kt:coil-compose:2.5.0")
