@@ -129,7 +129,7 @@ fun MoodScreen(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = White,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp, start = 12.dp)
                     )
 
                     OutlinedTextField(
@@ -155,7 +155,8 @@ fun MoodScreen(
                         text = "Como foi esse dia?",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = White
+                        color = White,
+                        modifier = Modifier.padding(bottom = 8.dp, start = 12.dp)
                     )
 
                     Row(modifier = Modifier.fillMaxWidth()) {
@@ -179,9 +180,7 @@ fun MoodScreen(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = White,
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp, start = 12.dp)
                     )
 
                     OutlinedTextField(
