@@ -21,7 +21,7 @@ sealed class DrawerMenuItem(
     val fixedBottom: Boolean = false
 ) {
     object Home : DrawerMenuItem(R.string.menu_home, Icons.Default.Home, "home")
-    object CheckIn : DrawerMenuItem(R.string.menu_checkin, Icons.Default.Check, "checkin")
+    object CheckIn : DrawerMenuItem(R.string.menu_checkin, Icons.Default.Check, "check_in")
     object Evolution : DrawerMenuItem(R.string.menu_evolution, Icons.Default.ShowChart, "evolution")
     object Support : DrawerMenuItem(R.string.menu_support, Icons.Default.Call, "support")
     object Mood : DrawerMenuItem(R.string.menu_mood, Icons.Default.Mood, "mood")
