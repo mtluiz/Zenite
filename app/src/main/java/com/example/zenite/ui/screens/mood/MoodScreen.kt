@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.example.zenite.R
 import com.example.zenite.ui.layout.ZeniteScreen
 import com.example.zenite.ui.theme.GrayBlue
+import com.example.zenite.ui.theme.LightBlue
 import com.example.zenite.ui.theme.Primary
 import com.example.zenite.ui.theme.White
 import java.text.SimpleDateFormat
@@ -81,7 +82,7 @@ fun MoodScreen() {
         MoodEntry("🙂", "4 de maio de 2025", "Pude realizar todas minhas tarefas")
     )
 
-    ZeniteScreen(title = "Home") { padding ->
+    ZeniteScreen(title = "Humor") { padding ->
         Column(Modifier.padding(padding)) {
             Column(
                 modifier = Modifier
@@ -105,7 +106,7 @@ fun MoodScreen() {
                         .width(343.dp)
                         .height(330.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Primary)
+                        .background(LightBlue)
                         .padding(10.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
@@ -138,7 +139,7 @@ fun MoodScreen() {
                             .clickable { datePickerDialog.show() }
                             .background(White, shape = RoundedCornerShape(8.dp)),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
-                            containerColor = Color(0xFF366588), // Cor desejada
+                            containerColor = Color(0xFF366588),
                             unfocusedBorderColor = GrayBlue,
                             focusedBorderColor = Primary
                         )
@@ -227,7 +228,7 @@ fun MoodScreen() {
                         .width(343.dp)
                         .height(190.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Primary)
+                        .background(LightBlue)
                         .padding(29.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {

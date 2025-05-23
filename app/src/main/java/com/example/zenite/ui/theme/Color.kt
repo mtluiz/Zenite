@@ -10,6 +10,8 @@ val Black = Color(0xFF000000)
 val White = Color(0xFFFFFFFF)
 val GrayLight = Color(0xFFA8A8A9)
 val GrayDark = Color(0xFF676767)
+val GrayBlue = Color(0xFF366588)
+val LightBlue = Color(0xFF22567B)
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
