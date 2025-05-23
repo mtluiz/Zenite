@@ -12,6 +12,9 @@ import com.example.zenite.ui.screens.avatars.AvatarViewModel
 import com.example.zenite.ui.screens.avatars.ChooseAvatarScreen
 import com.example.zenite.ui.screens.demo.ZeniteHomeScreen
 import com.example.zenite.ui.screens.generate_access.GenerateAccessScreen
+import com.example.zenite.ui.screens.check_in.CheckInScreen
+import com.example.zenite.ui.screens.mood.MoodScreen
+import com.example.zenite.ui.screens.personal_evolution.PersonalEvolutionScreen
 
 @Composable
 fun ZeniteNavGraph(
@@ -56,7 +59,24 @@ fun ZeniteNavGraph(
         }
 
         composable("home") {
-            ZeniteHomeScreen()
+            ZeniteHomeScreen(navController = navController)
+        }
+
+        composable("check_in") {
+            CheckInScreen(
+                navController = navController,
+                onCheckInComplete = { navController.navigate("home") }
+            )
+        }
+
+        composable("mood") {
+            MoodScreen(
+                navController = navController
+            )
+        }
+
+        composable("evolution") {
+            PersonalEvolutionScreen()
         }
     }
 }
