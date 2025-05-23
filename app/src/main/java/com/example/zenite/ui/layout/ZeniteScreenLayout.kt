@@ -1,5 +1,6 @@
 package com.example.zenite.ui.layout
 
+import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
@@ -36,7 +37,15 @@ fun ZeniteScreen(
         mutableStateOf(getRandomAvatar(context) ?: "file:///android_asset/avatars/default.png")
     }
 
-    var currentRoute by remember { mutableStateOf("home") }
+    var currentRoute by remember { 
+        mutableStateOf(navController.currentBackStackEntry?.destination?.route ?: "home") 
+    }
+
+    val updateCurrentRoute: (String) -> Unit = { route ->
+        if (route.isNotEmpty()) {
+            currentRoute = route
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -45,8 +54,12 @@ fun ZeniteScreen(
                 items = drawerItems,
                 onItemClick = {
                     scope.launch { drawerState.close() }
-                    navController.navigate(it.route)
-                    currentRoute = it.route
+                    try {
+                        navController.navigate(it.route)
+                        updateCurrentRoute(it.route)
+                    } catch (e: Exception) {
+                        Log.e("Navigation", "Error navigating to ${it.route}", e)
+                    }
                 },
                 onClose = { scope.launch { drawerState.close() } }
             )
@@ -65,8 +78,12 @@ fun ZeniteScreen(
                 ZeniteBottomBar(
                     currentRoute = currentRoute,
                     onItemClick = {
-                        navController.navigate(it)
-                        currentRoute = it
+                        try {
+                            navController.navigate(it)
+                            updateCurrentRoute(it)
+                        } catch (e: Exception) {
+                            Log.e("Navigation", "Error navigating to $it", e)
+                        }
                     }
                 )
             },
