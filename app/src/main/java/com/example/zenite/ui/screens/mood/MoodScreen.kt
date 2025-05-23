@@ -45,11 +45,15 @@ import com.example.zenite.ui.theme.White
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("RememberReturnType")
 @Composable
-fun MoodScreen() {
+fun MoodScreen(
+    navController: NavHostController = rememberNavController()
+) {
 
     val selectedMood = remember { mutableIntStateOf(-1) }
     var description by remember { mutableStateOf("") }
@@ -82,7 +86,7 @@ fun MoodScreen() {
         MoodEntry("🙂", "4 de maio de 2025", "Pude realizar todas minhas tarefas")
     )
 
-    ZeniteScreen(title = "Humor") { padding ->
+    ZeniteScreen(title = "Humor", navController = navController) { padding ->
         Column(Modifier.padding(padding)) {
             Column(
                 modifier = Modifier

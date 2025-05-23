@@ -51,4 +51,13 @@
 
     <!-- Misc -->
     <string name="btn_back">Voltar</string>
+    
+    <!-- Your Data -->
+    <string name="seus_dados">Seus Dados</string>
+    <string name="avatar">Avatar</string>
+    <string name="codigo_zenite">Codigo Zenite</string>
+    <string name="senha">Senha</string>
+    <string name="salvar">Salvar</string>
+    <string name="mudar_avatar">Mudar Avatar</string>
+    <string name="alteracoes_salvas">Alterações Salvas</string>
 </resources>

@@ -7,11 +7,11 @@ plugins {
 
 android {
     namespace = "com.example.zenite"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.zenite"
-        minSdk = 31
+        minSdk = 28
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -34,6 +34,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -52,6 +53,7 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
 
     implementation("androidx.core:core-ktx:1.12.0")
 
@@ -75,6 +77,7 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:0.15.1-alpha01")
     kapt("com.google.dagger:hilt-compiler:2.51.1")
 
     implementation("io.coil-kt:coil-compose:2.5.0")

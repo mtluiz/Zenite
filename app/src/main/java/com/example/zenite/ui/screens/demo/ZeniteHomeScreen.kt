@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.zenite.ui.layout.ZeniteScreen
 import com.example.zenite.ui.theme.Black
 import com.example.zenite.ui.theme.GrayDark
@@ -30,8 +32,10 @@ import com.example.zenite.ui.theme.Secondary
 import com.example.zenite.ui.theme.Tertiary
 
 @Composable
-fun ZeniteHomeScreen() {
-    ZeniteScreen(title = "Home") { padding ->
+fun ZeniteHomeScreen(
+    navController: NavHostController = rememberNavController()
+) {
+    ZeniteScreen(title = "Home", navController = navController) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

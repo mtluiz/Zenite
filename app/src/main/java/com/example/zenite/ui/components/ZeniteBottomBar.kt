@@ -39,7 +39,7 @@ fun ZeniteBottomBar(
 ) {
     val items = listOf(
         ZeniteNavItem("evolution", Icons.Default.ShowChart),
-        ZeniteNavItem("checkin", Icons.Default.Check),
+        ZeniteNavItem("check_in", Icons.Default.Check),
         ZeniteNavItem("home", Icons.Default.Home),
         ZeniteNavItem("support", Icons.Default.Call),
         ZeniteNavItem("settings", Icons.Default.Settings)
