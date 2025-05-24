@@ -17,6 +17,7 @@ import com.example.zenite.ui.screens.check_in.CheckInScreen
 import com.example.zenite.ui.screens.mood.MoodScreen
 import com.example.zenite.ui.screens.personal_evolution.PersonalEvolutionScreen
 import com.example.zenite.ui.screens.questionnaire.QuestionnaireScreen
+import com.example.zenite.ui.screens.support.SupportScreen
 
 @Composable
 fun ZeniteNavGraph(
@@ -86,6 +87,10 @@ fun ZeniteNavGraph(
 
         composable("evolution") {
             PersonalEvolutionScreen(navController = navController)
+        }
+        
+        composable("support") {
+            SupportScreen(navController = navController)
         }
         
         composable("diary") {

@@ -31,9 +31,11 @@ import com.example.zenite.ui.theme.GrayBlue
 import com.example.zenite.ui.theme.LightBlue
 import com.example.zenite.ui.theme.Primary
 import com.example.zenite.ui.theme.White
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun SupportScreen() {
+fun SupportScreen(navController: NavHostController = rememberNavController()) {
     var selectedSupportType by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var showSuccessDialog by remember { mutableStateOf(false) }
@@ -41,7 +43,7 @@ fun SupportScreen() {
 
     val supportTypes = listOf("RH", "Psicólogo")
 
-    ZeniteScreen(title = "Suporte") { padding ->
+    ZeniteScreen(title = "Suporte", navController = navController) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             Column(
                 modifier = Modifier
