@@ -8,60 +8,85 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
 class CheckInViewModel @Inject constructor() : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(CheckInUiState())
     val uiState: StateFlow<CheckInUiState> = _uiState
-    
+
+    private val _selectedMood = MutableStateFlow<Int?>(null)
+    val selectedMood: StateFlow<Int?> = _selectedMood
+
+    private val _last3Days = MutableStateFlow(
+        listOf(
+            MoodDay("Qua", 3, true),
+            MoodDay("Qui", 2, true),
+            MoodDay("Sex", null, false)
+        )
+    )
+    val last3Days: StateFlow<List<MoodDay>> = _last3Days
+
     init {
-        // Inicializa com a hora atual
         updateCurrentTime()
-        
-        // Simulação de dados de localização (em um app real, viria do GPS)
-        _uiState.update { it.copy(
-            locationName = "Zenite Headquarters",
-            address = "Av. Paulista, 1000 - Bela Vista, São Paulo - SP"
-        )}
-        
-        // Atualiza o horário a cada segundo
+        _uiState.update {
+            it.copy(
+                locationName = "Zenite Headquarters",
+                address = "Av. Paulista, 1000 - Bela Vista, São Paulo - SP"
+            )
+        }
+
         viewModelScope.launch {
-            while(true) {
+            while (true) {
                 delay(1000)
                 updateCurrentTime()
             }
         }
     }
-    
+
     private fun updateCurrentTime() {
-        _uiState.update { it.copy(currentTime = System.currentTimeMillis()) }
+        _uiState.update {
+            it.copy(currentTime = System.currentTimeMillis())
+        }
     }
-    
-    fun performCheckIn() {
+
+    fun selectMood(index: Int) {
+        _selectedMood.value = index
+    }
+
+    fun submitCheckin(onComplete: () -> Unit) {
+        val mood = _selectedMood.value ?: return
+        _uiState.update { it.copy(isLoading = true) }
+
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            
-            // Simulação de chamada de API para registrar o check-in
             delay(1500)
-            
-            // Registra o check-in no histórico
-            val checkIn = CheckInRecord(
-                location = _uiState.value.locationName,
-                timestamp = _uiState.value.currentTime
-            )
-            
-            // Em um app real, você salvaria este registro em um banco de dados ou enviaria para um servidor
-            
-            _uiState.update { it.copy(
-                isLoading = false,
-                lastCheckIn = checkIn
-            )}
+
+            val updated = _last3Days.value.toMutableList()
+            updated[2] = MoodDay("Sex", mood, true)
+            _last3Days.value = updated
+            _selectedMood.value = null
+
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    lastCheckIn = CheckInRecord(
+                        location = _uiState.value.locationName,
+                        timestamp = _uiState.value.currentTime
+                    )
+                )
+            }
+
+            onComplete()
         }
     }
 }
+
+data class MoodDay(
+    val day: String,
+    val mood: Int?,
+    val checked: Boolean
+)
 
 data class CheckInUiState(
     val isLoading: Boolean = false,
@@ -74,4 +99,4 @@ data class CheckInUiState(
 data class CheckInRecord(
     val location: String,
     val timestamp: Long
-) 
+)
