@@ -12,9 +12,11 @@ import com.example.zenite.ui.screens.avatars.AvatarViewModel
 import com.example.zenite.ui.screens.avatars.ChooseAvatarScreen
 import com.example.zenite.ui.screens.demo.ZeniteHomeScreen
 import com.example.zenite.ui.screens.generate_access.GenerateAccessScreen
+import com.example.zenite.ui.screens.generate_access.GenerateAccessViewModel
 import com.example.zenite.ui.screens.check_in.CheckInScreen
 import com.example.zenite.ui.screens.mood.MoodScreen
 import com.example.zenite.ui.screens.personal_evolution.PersonalEvolutionScreen
+import com.example.zenite.ui.screens.questionnaire.QuestionnaireScreen
 
 @Composable
 fun ZeniteNavGraph(
@@ -25,9 +27,17 @@ fun ZeniteNavGraph(
     NavHost(navController = navController, startDestination = "generate_access") {
 
         composable("generate_access") {
+            val generateAccessViewModel: GenerateAccessViewModel = hiltViewModel()
+            val userCode = generateAccessViewModel.userCode.collectAsState().value
+            
             GenerateAccessScreen(
                 onAccessAccount = { navController.navigate("login") },
-                onGenerateCode = {  },
+                onGenerateCode = { 
+                    navController.navigate("home") {
+                        popUpTo("generate_access") { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 onOpenAvatarScreen = { navController.navigate("choose_avatar") },
                 onBack = { navController.popBackStack() }
             )
@@ -36,7 +46,6 @@ fun ZeniteNavGraph(
         composable("login") {
             LoginScreen(
                 onLoginClick = {
-                    authViewModel.login()
                     navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -76,7 +85,11 @@ fun ZeniteNavGraph(
         }
 
         composable("evolution") {
-            PersonalEvolutionScreen()
+            PersonalEvolutionScreen(navController = navController)
+        }
+        
+        composable("diary") {
+            QuestionnaireScreen(navController = navController)
         }
     }
 }

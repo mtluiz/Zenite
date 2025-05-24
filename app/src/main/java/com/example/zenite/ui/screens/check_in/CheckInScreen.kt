@@ -21,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,6 +61,7 @@ fun CheckInScreen(
     
     var checkInCompleted by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
     var remainingTimeInSeconds by remember { mutableStateOf(24 * 60 * 60L) }
     
     LaunchedEffect(checkInCompleted) {
@@ -71,6 +73,19 @@ fun CheckInScreen(
             checkInCompleted = false
         }
     }
+
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            showErrorDialog = true
+        }
+    }
+    
+    LaunchedEffect(uiState.lastCheckIn) {
+        if (uiState.lastCheckIn != null) {
+            showSuccessDialog = true
+            checkInCompleted = true
+        }
+    }
     
     if (showSuccessDialog) {
         AlertDialog(
@@ -80,6 +95,22 @@ fun CheckInScreen(
             confirmButton = {
                 Button(
                     onClick = { showSuccessDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7))
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+    
+    if (showErrorDialog && uiState.error != null) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Erro") },
+            text = { Text(uiState.error ?: "Ocorreu um erro desconhecido") },
+            confirmButton = {
+                Button(
+                    onClick = { showErrorDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7))
                 ) {
                     Text("OK")
@@ -114,11 +145,11 @@ fun CheckInScreen(
             )
             
             TimeInfoCard(
-                onCheckInClick = {
-                    checkInCompleted = true
-                    showSuccessDialog = true
+                onCheckInClick = { selectedMood ->
+                    viewModel.recordMood(selectedMood)
                 },
-                isCheckInEnabled = !checkInCompleted
+                isCheckInEnabled = !checkInCompleted && !uiState.isLoading,
+                isLoading = uiState.isLoading
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -229,8 +260,9 @@ fun DayMoodCard(
 
 @Composable
 fun TimeInfoCard(
-    onCheckInClick: () -> Unit = {},
-    isCheckInEnabled: Boolean = true
+    onCheckInClick: (String) -> Unit = {},
+    isCheckInEnabled: Boolean = true,
+    isLoading: Boolean = false
 ) { 
     var selectedMood by remember { mutableStateOf<String?>(null) }
     
@@ -302,11 +334,18 @@ fun TimeInfoCard(
 
             Spacer(modifier = Modifier.height(12.dp))
             Button(
-                onClick = { onCheckInClick() },
+                onClick = { selectedMood?.let { onCheckInClick(it) } },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7)),
                 enabled = selectedMood != null && isCheckInEnabled
             ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
                 Text(
                     text = "Check-in",
                     color = Color.White,
@@ -314,6 +353,7 @@ fun TimeInfoCard(
                     fontSize = 14.sp,
                     fontFamily = ZeniteFonts.Quicksand
                 )
+                }
             }
         }
     }

@@ -22,7 +22,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 fun PasswordInputField(
     label: String,
     password: String,
-    onPasswordChange: (String) -> Unit
+    onPasswordChange: (String) -> Unit,
+    enabled: Boolean = true
 ) {
     var isPasswordVisible by remember { mutableStateOf(false) }
 
@@ -41,7 +42,8 @@ fun PasswordInputField(
                 }
             },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled
         )
 
         PasswordStrengthIndicator(password)

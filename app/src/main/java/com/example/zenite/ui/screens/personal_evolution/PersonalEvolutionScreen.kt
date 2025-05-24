@@ -35,17 +35,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.zenite.ui.layout.ZeniteScreen
 
 @Composable
 fun PersonalEvolutionScreen(
+    navController: NavHostController = rememberNavController(),
     viewModel: PersonalEvolutionViewModel = hiltViewModel()
 ) {
     val weeklyMoodData by viewModel.weeklyMoodData.collectAsState()
     val monthlyMoodPercentages by viewModel.monthlyMoodPercentages.collectAsState()
     val improvementPercentage by viewModel.improvementPercentage.collectAsState()
     
-    ZeniteScreen(title = "Evolução pessoal") { paddingValues ->
+    ZeniteScreen(
+        title = "Evolução pessoal",
+        navController = navController
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)

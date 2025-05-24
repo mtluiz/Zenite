@@ -18,22 +18,27 @@ import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.zenite.R
 import com.example.zenite.ui.components.ZeniteFooter
 import com.example.zenite.ui.theme.Primary
@@ -41,9 +46,25 @@ import com.example.zenite.ui.theme.Tertiary
 import com.example.zenite.ui.theme.White
 
 @Composable
-fun LoginScreen(onLoginClick: () -> Unit, onForgotPassword: () -> Unit, onGenerateAccess: () -> Unit) {
+fun LoginScreen(
+    onLoginClick: () -> Unit, 
+    onForgotPassword: () -> Unit, 
+    onGenerateAccess: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
+    val savedUserCode by viewModel.userCode.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    
     var code by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    
+    // Quando o código salvo é carregado, preenche o campo
+    LaunchedEffect(savedUserCode) {
+        if (!savedUserCode.isNullOrEmpty()) {
+            code = savedUserCode!!
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -83,7 +104,8 @@ fun LoginScreen(onLoginClick: () -> Unit, onForgotPassword: () -> Unit, onGenera
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                enabled = !isLoading
             )
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
@@ -98,7 +120,8 @@ fun LoginScreen(onLoginClick: () -> Unit, onForgotPassword: () -> Unit, onGenera
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                enabled = !isLoading
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -107,18 +130,41 @@ fun LoginScreen(onLoginClick: () -> Unit, onForgotPassword: () -> Unit, onGenera
                 fontSize = 14.sp,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable { onForgotPassword() }
+                    .clickable(enabled = !isLoading) { onForgotPassword() }
             )
+            
+            // Exibir mensagem de erro se houver
+            if (error != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = error ?: "",
+                    color = Color.Red,
+                    fontSize = 14.sp
+                )
+            }
+            
             Spacer(modifier = Modifier.height(24.dp))
             Button(
-                onClick = { onLoginClick() },
+                onClick = { 
+                    viewModel.login(code, password)
+                    onLoginClick() 
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                enabled = !isLoading && code.isNotEmpty() && password.isNotEmpty()
             ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
                 Text(text = stringResource(id = R.string.login_button), color = White)
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.Center) {
@@ -127,7 +173,7 @@ fun LoginScreen(onLoginClick: () -> Unit, onForgotPassword: () -> Unit, onGenera
                 Text(
                     text = stringResource(id = R.string.generate_access),
                     color = Tertiary,
-                    modifier = Modifier.clickable { onGenerateAccess() }
+                    modifier = Modifier.clickable(enabled = !isLoading) { onGenerateAccess() }
                 )
             }
         }
