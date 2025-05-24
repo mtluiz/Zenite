@@ -55,7 +55,13 @@ fun ZeniteScreen(
                 onItemClick = {
                     scope.launch { drawerState.close() }
                     try {
-                        navController.navigate(it.route)
+                        navController.navigate(it.route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                         updateCurrentRoute(it.route)
                     } catch (e: Exception) {
                         Log.e("Navigation", "Error navigating to ${it.route}", e)
@@ -79,7 +85,13 @@ fun ZeniteScreen(
                     currentRoute = currentRoute,
                     onItemClick = {
                         try {
-                            navController.navigate(it)
+                            navController.navigate(it) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                             updateCurrentRoute(it)
                         } catch (e: Exception) {
                             Log.e("Navigation", "Error navigating to $it", e)

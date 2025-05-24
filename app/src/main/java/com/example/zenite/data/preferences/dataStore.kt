@@ -24,4 +24,16 @@ class UserPreferencesImpl @Inject constructor(@ApplicationContext private val co
             .map { prefs -> prefs[PreferencesKeys.WELCOME_SEEN] == true }
             .first()
     }
+    
+    override suspend fun saveUserCode(code: String) {
+        context.dataStore.edit { prefs ->
+            prefs[PreferencesKeys.USER_CODE] = code
+        }
+    }
+    
+    override suspend fun getUserCode(): String? {
+        return context.dataStore.data
+            .map { prefs -> prefs[PreferencesKeys.USER_CODE] }
+            .first()
+    }
 }

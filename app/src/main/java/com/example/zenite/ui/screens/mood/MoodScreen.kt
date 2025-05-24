@@ -5,22 +5,28 @@ import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +42,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.zenite.R
+import com.example.zenite.data.local.entity.MoodEntity
 import com.example.zenite.ui.layout.ZeniteScreen
 import com.example.zenite.ui.theme.GrayBlue
 import com.example.zenite.ui.theme.LightBlue
@@ -47,26 +55,34 @@ import java.util.Calendar
 import java.util.Locale
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("RememberReturnType")
 @Composable
 fun MoodScreen(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    viewModel: MoodViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
 
     val selectedMood = remember { mutableIntStateOf(-1) }
     var description by remember { mutableStateOf("") }
-    val moodIcons = listOf("😄", "🙂", "😐", "☹️", "😡")
+    val moodIcons = listOf("😁", "🙂", "😐", "🙁", "😠", "🤩", "😴")
+    val moodLabels = listOf("Feliz", "Calmo", "Neutro", "Triste", "Ansioso", "Animado", "Cansado")
+    
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     var selectedDate by remember { mutableStateOf("") }
-
     val calendar = Calendar.getInstance()
-    val datePickerDialog = remember {
-        DatePickerDialog(
+    
+    val showDatePicker = {
+        val datePickerDialog = DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
                 calendar.set(year, month, dayOfMonth)
@@ -76,15 +92,63 @@ fun MoodScreen(
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         )
+        datePickerDialog.show()
     }
-
-    data class MoodEntry(val icon: String, val date: String, val description: String)
-    val mockEntries = listOf(
-        MoodEntry("🙂", "1 de maio de 2025", "Dia tranquilo em casa"),
-        MoodEntry("😄", "2 de maio de 2025", "Saí com os amigos"),
-        MoodEntry("😐", "3 de maio de 2025", "Dia normal no trabalho"),
-        MoodEntry("🙂", "4 de maio de 2025", "Pude realizar todas minhas tarefas")
-    )
+    
+    LaunchedEffect(uiState.saveSuccess) {
+        if (uiState.saveSuccess) {
+            showSuccessDialog = true
+            viewModel.clearSaveSuccess()
+            
+            selectedMood.value = -1
+            description = ""
+            selectedDate = ""
+        }
+    }
+    
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            showErrorDialog = true
+        }
+    }
+    
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { showSuccessDialog = false },
+            title = { Text("Sucesso") },
+            text = { Text("Seu registro de humor foi salvo com sucesso!") },
+            confirmButton = {
+                Button(
+                    onClick = { showSuccessDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7))
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+    
+    if (showErrorDialog && uiState.error != null) {
+        AlertDialog(
+            onDismissRequest = { 
+                showErrorDialog = false
+                viewModel.clearError()
+            },
+            title = { Text("Erro") },
+            text = { Text(uiState.error ?: "Ocorreu um erro desconhecido") },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        showErrorDialog = false 
+                        viewModel.clearError()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7))
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     ZeniteScreen(title = "Humor", navController = navController) { padding ->
         Column(Modifier.padding(padding)) {
@@ -132,22 +196,22 @@ fun MoodScreen(
                         modifier = Modifier.padding(bottom = 8.dp, start = 12.dp)
                     )
 
-                    OutlinedTextField(
-                        value = selectedDate,
-                        onValueChange = {},
-                        readOnly = true,
+                    Box(
                         modifier = Modifier
                             .width(300.dp)
-                            .height(26.dp)
-                            .align(Alignment.CenterHorizontally)
-                            .clickable { datePickerDialog.show() }
-                            .background(White, shape = RoundedCornerShape(8.dp)),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            containerColor = Color(0xFF366588),
-                            unfocusedBorderColor = GrayBlue,
-                            focusedBorderColor = Primary
+                            .height(40.dp)
+                            .background(White, shape = RoundedCornerShape(8.dp))
+                            .clickable { showDatePicker() }
+                            .padding(horizontal = 12.dp)
+                            .align(Alignment.CenterHorizontally),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = if (selectedDate.isEmpty()) "Selecione uma data" else selectedDate,
+                            color = if (selectedDate.isEmpty()) Color.Gray else Color.Black,
+                            fontSize = 14.sp
                         )
-                    )
+                    }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -159,8 +223,17 @@ fun MoodScreen(
                         modifier = Modifier.padding(bottom = 8.dp, start = 12.dp)
                     )
 
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
                         moodIcons.forEachIndexed { index, icon ->
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            ) {
                             Text(
                                 text = icon,
                                 fontSize = 20.sp,
@@ -172,6 +245,13 @@ fun MoodScreen(
                                     .clickable { selectedMood.value = index }
                                     .padding(12.dp)
                             )
+                                Text(
+                                    text = moodLabels[index],
+                                    color = if (selectedMood.value == index) Color.Cyan else White,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
 
@@ -191,25 +271,40 @@ fun MoodScreen(
                             .height(80.dp)
                             .align(Alignment.CenterHorizontally)
                             .background(White, shape = RoundedCornerShape(8.dp)),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            containerColor = Color(0xFF366588),
-                            unfocusedBorderColor = GrayBlue,
-                            focusedBorderColor = Primary
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Primary,
+                            unfocusedBorderColor = GrayBlue
                         )
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Button(
-                        onClick = { /* TODO: Salvar registros */ },
+                        onClick = { 
+                            if (selectedMood.value >= 0) {
+                                val moodEmoji = moodIcons[selectedMood.value]
+                                val apiMoods = listOf("happy", "calm", "neutral", "sad", "anxious", "excited", "tired")
+                                val apiMood = apiMoods[selectedMood.value]
+                                viewModel.saveMood(apiMood, description, selectedDate)
+                            }
+                        },
                         modifier = Modifier
                             .width(181.dp)
                             .height(29.dp)
                             .align(Alignment.CenterHorizontally),
                         shape = RoundedCornerShape(5.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7)),
+                        enabled = selectedMood.value >= 0 && !uiState.isLoading
                     ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
                         Text(text = "Salvar", color = White, fontSize = 12.sp)
+                        }
                     }
                 }
 
@@ -235,33 +330,61 @@ fun MoodScreen(
                         .padding(29.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
-                    mockEntries.takeLast(3).reversed().forEach { entry ->
+                    if (uiState.isLoading && uiState.moods.isEmpty()) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth().height(100.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                color = White,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    } else if (uiState.moods.isEmpty()) {
+                        Text(
+                            text = "Nenhum registro de humor encontrado",
+                            color = White,
+                            fontSize = 14.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    } else {
+                        uiState.moods.take(3).forEach { mood ->
+                            MoodEntryItem(mood)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MoodEntryItem(mood: MoodEntity) {
+    val dateFormatter = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale("pt", "BR"))
+    val dateObject = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(mood.date)
+    val formattedDate = dateObject?.let { dateFormatter.format(it) } ?: mood.date
+    
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(bottom = 8.dp)
                         ) {
                             Text(
-                                text = entry.icon,
+            text = mood.mood.toEmoji(),
                                 fontSize = 15.sp,
                                 modifier = Modifier.padding(end = 8.dp)
                             )
                             Column {
                                 Text(
-                                    text = entry.date,
+                text = formattedDate,
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp
                                 )
                                 Text(
-                                    text = entry.description,
+                text = mood.description ?: "",
                                     color = Color.White,
                                     fontSize = 12.sp
                                 )
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }

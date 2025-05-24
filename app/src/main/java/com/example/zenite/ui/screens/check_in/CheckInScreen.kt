@@ -1,18 +1,14 @@
 package com.example.zenite.ui.screens.check_in
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,10 +16,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,259 +33,365 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import coil.compose.rememberAsyncImagePainter
-import com.example.zenite.R
+import coil.compose.AsyncImage
 import com.example.zenite.ui.layout.ZeniteScreen
-import com.example.zenite.ui.theme.Blueberry
 import com.example.zenite.ui.theme.White
+import com.example.zenite.ui.theme.Blueberry
+import com.example.zenite.ui.theme.LightBlueberry
 import com.example.zenite.ui.theme.ZeniteFonts
 import kotlinx.coroutines.delay
 
 @Composable
 fun CheckInScreen(
-    navController: NavHostController,
     viewModel: CheckInViewModel = hiltViewModel(),
+    navController: NavController,
     onCheckInComplete: () -> Unit = {}
 ) {
-    val scroll = rememberScrollState()
-    val selectedMood by viewModel.selectedMood.collectAsState()
-    val last3Days by viewModel.last3Days.collectAsState()
-    var showSuccess by remember { mutableStateOf(false) }
-
-    if (showSuccess) {
-        LaunchedEffect(Unit) {
-            delay(3000)
-            showSuccess = false
-            onCheckInComplete()
-        }
-
-        Dialog(onDismissRequest = { }) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF22567B), shape = RoundedCornerShape(16.dp))
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.popup_checkin),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxWidth(),
-                        contentScale = ContentScale.Fit
-                    )
-                    Text(
-                        text = "Check-in realizado com sucesso!",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
+    val uiState by viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
+    
+    var checkInCompleted by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var remainingTimeInSeconds by remember { mutableStateOf(24 * 60 * 60L) }
+    
+    LaunchedEffect(checkInCompleted) {
+        if (checkInCompleted) {
+            while (remainingTimeInSeconds > 0) {
+                delay(1000)
+                remainingTimeInSeconds -= 1
             }
+            checkInCompleted = false
         }
     }
 
-    ZeniteScreen(title = stringResource(R.string.checkin), navController = navController) { padding ->
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            showErrorDialog = true
+        }
+    }
+    
+    LaunchedEffect(uiState.lastCheckIn) {
+        if (uiState.lastCheckIn != null) {
+            showSuccessDialog = true
+            checkInCompleted = true
+        }
+    }
+    
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { showSuccessDialog = false },
+            title = { Text("Sucesso") },
+            text = { Text("Check-in realizado com sucesso!") },
+            confirmButton = {
+                Button(
+                    onClick = { showSuccessDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7))
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+    
+    if (showErrorDialog && uiState.error != null) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Erro") },
+            text = { Text(uiState.error ?: "Ocorreu um erro desconhecido") },
+            confirmButton = {
+                Button(
+                    onClick = { showErrorDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7))
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+    
+    ZeniteScreen(title = "Check-in", navController = navController as NavHostController) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
-                .verticalScroll(scroll)
-                .padding(horizontal = 24.dp, vertical = 8.dp),
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            CheckInStreak(days = last3Days, expanded = true)
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            CurrentMoodCard(
+                locationName = uiState.locationName,
+                address = uiState.address
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
 
             Text(
-                text = "Check-in disponível",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(start = 4.dp)
+                modifier = Modifier.padding(horizontal = 25.dp),
+                text = if (!checkInCompleted) "Check-in disponível" else formatRemainingTime(remainingTimeInSeconds),
+                color = Color.Black,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 24.sp,
+                fontFamily = ZeniteFonts.Quicksand
             )
-
-            MoodSelector(
-                selected = selectedMood,
-                onSelect = { viewModel.selectMood(it) }
-            )
-
-            Button(
-                onClick = {
-                    viewModel.submitCheckin { showSuccess = true }
+            
+            TimeInfoCard(
+                onCheckInClick = { selectedMood ->
+                    viewModel.recordMood(selectedMood)
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                enabled = selectedMood != null,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7))
-            ) {
-                Text(
-                    text = stringResource(R.string.checkin),
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                isCheckInEnabled = !checkInCompleted && !uiState.isLoading,
+                isLoading = uiState.isLoading
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
+fun formatRemainingTime(seconds: Long): String {
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    val secs = seconds % 60
+    return String.format("Próximo check-in em: %02d:%02d:%02d", hours, minutes, secs)
+}
+
 @Composable
-fun CheckInStreak(days: List<MoodDay>, expanded: Boolean = false) {
+fun CurrentMoodCard(locationName: String, address: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (expanded) 140.dp else 100.dp),
-        colors = CardDefaults.cardColors(containerColor = Blueberry),
-        shape = RoundedCornerShape(20.dp)
+            .padding(horizontal = 25.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Blueberry
+        )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.humor_history),
-                color = White,
-                fontSize = 16.sp,
-                fontFamily = ZeniteFonts.Quicksand,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                days.forEach { day ->
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFF1B4D70)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Image(
-                                painter = rememberAsyncImagePainter("file:///android_asset/faces/${day.mood ?: 3}.png"),
-                                contentDescription = null,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = day.day,
-                                color = White,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Image(
-                            painter = painterResource(id = if (day.checked) R.drawable.check else R.drawable.cross),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(18.dp)
-                                .align(Alignment.BottomEnd)
-                                .offset(x = 12.dp, y = 12.dp)
-                        )
-                    }
-                }
-            }
+            modifier = Modifier.padding(16.dp),
+        ) {    
+            MoodSelector()
         }
     }
 }
 
 @Composable
-fun MoodSelector(
-    selected: Int?,
-    onSelect: (Int) -> Unit
-) {
-    val moods = listOf(
-        R.string.mood_very_good,
-        R.string.mood_good,
-        R.string.mood_neutral,
-        R.string.mood_bad,
-        R.string.mood_very_bad
-    )
+fun MoodSelector() {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+                            .padding(vertical = 22.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            DayMoodCard(
+                day = "Qua",
+            )
+            
+            DayMoodCard(
+                day = "Qui",
+            )
+            
+            DayMoodCard(
+                day = "Sex",
+            )
+        }
+    }
+}
 
+@Composable
+fun DayMoodCard(
+    day: String,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+    ) {
+        Card(
+            modifier = Modifier
+                .width(87.dp)
+                .height(114.dp)
+                .padding(horizontal = 2.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = LightBlueberry
+            ),
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(87.dp)
+                    .height(114.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = "file:///android_asset/check_in/smile-face.png",
+                    contentDescription = "Mood avatar",
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(10.dp))
+        
+        Text(
+            text = day,
+            style = MaterialTheme.typography.bodyMedium,
+            color = White,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun TimeInfoCard(
+    onCheckInClick: (String) -> Unit = {},
+    isCheckInEnabled: Boolean = true,
+    isLoading: Boolean = false
+) { 
+    var selectedMood by remember { mutableStateOf<String?>(null) }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Blueberry),
-        shape = RoundedCornerShape(40.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(40.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Blueberry
+        )
     ) {
         Column(
-            Modifier.padding(vertical = 24.dp, horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(25.dp)
         ) {
-            Text(
-                text = stringResource(R.string.how_you_feel),
-                color = White,
-                fontSize = 16.sp,
-                fontFamily = ZeniteFonts.Quicksand,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = "Como você está se sentindo hoje?",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    fontFamily = ZeniteFonts.Quicksand
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(22.dp))
 
             Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
             ) {
-                (1..5).forEach { moodIndex ->
-                    val isSelected = selected == moodIndex
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .clickable { onSelect(moodIndex) }
-                            .padding(horizontal = 4.dp)
-                            .width(60.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isSelected) Color.White.copy(alpha = 0.2f)
-                                    else Color.Transparent
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                painter = rememberAsyncImagePainter("file:///android_asset/faces/$moodIndex.png"),
-                                contentDescription = null,
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = stringResource(id = moods[moodIndex - 1]),
-                            fontSize = 11.sp,
-                            color = White,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 12.sp,
-                            maxLines = 2
-                        )
-                    }
+                CheckInButton(
+                    emoji = "😁",
+                    text = "Muito bem",
+                    isSelected = selectedMood == "Muito bem",
+                    onClick = { selectedMood = "Muito bem" }
+                )
+
+                CheckInButton(
+                    emoji = "🙂",
+                    text = "Bem",
+                    isSelected = selectedMood == "Bem",
+                    onClick = { selectedMood = "Bem" }
+                )
+
+                CheckInButton(
+                    emoji = "😐",
+                    text = "Neutro",
+                    isSelected = selectedMood == "Neutro",
+                    onClick = { selectedMood = "Neutro" }
+                )
+
+                CheckInButton(
+                    emoji = "🙁",
+                    text = "Mal",
+                    isSelected = selectedMood == "Mal",
+                    onClick = { selectedMood = "Mal" }
+                )
+
+                CheckInButton(
+                    emoji = "😠",
+                    text = "Muito mal",
+                    isSelected = selectedMood == "Muito mal",
+                    onClick = { selectedMood = "Muito mal" }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = { selectedMood?.let { onCheckInClick(it) } },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19BFB7)),
+                enabled = selectedMood != null && isCheckInEnabled
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                Text(
+                    text = "Check-in",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    fontFamily = ZeniteFonts.Quicksand
+                )
                 }
             }
         }
+    }
+} 
+
+@Composable
+fun CheckInButton(
+    emoji: String, 
+    text: String, 
+    emojiSize: Dp = 34.dp,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier
+                .background(
+                    color = if (isSelected) Color(0xFF19BFB7) else Color.Transparent,
+                    shape = CircleShape
+                )
+                .padding(4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = emoji,
+                fontSize = emojiSize.value.sp
+            )
+        }
+        
+        Text(
+            text = text,
+            color = if (isSelected) Color(0xFF19BFB7) else White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+            fontFamily = ZeniteFonts.Quicksand
+        )
     }
 }
