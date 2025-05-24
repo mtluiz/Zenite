@@ -60,4 +60,14 @@
     <string name="salvar">Salvar</string>
     <string name="mudar_avatar">Mudar Avatar</string>
     <string name="alteracoes_salvas">Alterações Salvas</string>
+
+    <string name="checkin">Check-in</string>
+    <string name="how_you_feel">Como você está se sentindo hoje?</string>
+    <string name="humor_history">Seu historico de humor</string>
+    <string name="mood_very_good">Muito bem</string>
+    <string name="mood_good">Bem</string>
+    <string name="mood_neutral">Neutro</string>
+    <string name="mood_bad">Mal</string>
+    <string name="mood_very_bad">Muito mal</string>
+
 </resources>
