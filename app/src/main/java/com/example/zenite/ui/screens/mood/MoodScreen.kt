@@ -57,6 +57,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("RememberReturnType")
@@ -151,7 +152,11 @@ fun MoodScreen(
     }
 
     ZeniteScreen(title = "Humor", navController = navController) { padding ->
-        Column(Modifier.padding(padding)) {
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -172,7 +177,7 @@ fun MoodScreen(
                 Column(
                     modifier = Modifier
                         .width(343.dp)
-                        .height(330.dp)
+                        .height(400.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(LightBlue)
                         .padding(10.dp)
@@ -232,7 +237,7 @@ fun MoodScreen(
                         moodIcons.forEachIndexed { index, icon ->
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(horizontal = 4.dp)
+                                modifier = Modifier.padding(horizontal = 1.dp)
                             ) {
                             Text(
                                 text = icon,
